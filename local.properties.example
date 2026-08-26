@@ -1,0 +1,5 @@
+﻿# 将这个文件复制为 local.properties，并修改为你本地的 SDK 路径
+# Windows 示例：
+sdk.dir=C\:\\Users\\你的用户名\\AppData\\Local\\Android\\Sdk
+# 或者如果你安装了 Android Studio 在 D 盘：
+# sdk.dir=D\:\\Android\\Sdk
