@@ -1,31 +1,37 @@
 ﻿<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Android 悬浮时钟 App 预览</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floating Clock Preview</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: #1a1a1a;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            gap: 40px;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+        .label {
+            text-align: center;
+            color: #888;
+            margin-top: 15px;
+            font-size: 14px;
+            width: 300px;
         }
         .phone {
-            width: 375px;
-            height: 812px;
-            background: #000;
-            border-radius: 40px;
-            border: 12px solid #333;
-            position: relative;
+            width: 300px;
+            height: 600px;
+            border-radius: 30px;
+            border: 8px solid #333;
             overflow: hidden;
+            position: relative;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 600"><rect fill="%23234" width="300" height="600"/><text fill="rgba(255,255,255,0.1)" font-size="14" x="20" y="100">Home Screen</text><text fill="rgba(255,255,255,0.1)" font-size="14" x="20" y="130">App icons...</text><circle fill="rgba(255,255,255,0.05)" cx="150" cy="500" r="30"/></svg>');
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
         .notch {
@@ -33,217 +39,151 @@
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 150px;
-            height: 30px;
+            width: 120px;
+            height: 24px;
             background: #333;
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
             z-index: 10;
         }
-        .screen {
-            width: 100%;
-            height: 100%;
-            background: #000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            position: relative;
-        }
-        .date {
-            color: #fff;
-            font-size: 24px;
-            font-weight: normal;
-            margin-bottom: 8px;
-            letter-spacing: 2px;
-        }
-        .week {
-            color: #aaa;
-            font-size: 18px;
-            font-weight: normal;
-            margin-bottom: 32px;
-        }
-        .time {
-            color: #4CAF50;
-            font-size: 72px;
-            font-weight: bold;
-            font-family: 'Courier New', Courier, monospace;
-            letter-spacing: 4px;
-        }
-        .colon {
-            animation: blink 1s infinite;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
 
-        /* 模拟悬浮小窗口 */
-        .floating-window {
+        /* Floating Main Window */
+        .float-main {
             position: absolute;
-            top: 120px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.85);
+            top: 100px;
+            left: 10px;
+            width: 260px;
+            background: rgba(26, 26, 46, 0.93);
             border-radius: 16px;
-            padding: 12px 20px;
-            border: 1px solid rgba(76, 175, 80, 0.3);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-            z-index: 100;
+            padding: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
             cursor: move;
             user-select: none;
+            z-index: 20;
         }
-        .floating-window .float-time {
-            color: #4CAF50;
-            font-size: 24px;
-            font-weight: bold;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        .floating-window .float-label {
-            color: #888;
-            font-size: 10px;
-            text-align: center;
-            margin-top: 4px;
-        }
-        .floating-window .float-close {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 20px;
-            height: 20px;
-            background: #E53935;
-            border-radius: 50%;
-            color: #fff;
-            font-size: 12px;
+        .float-main-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            cursor: pointer;
+            margin-bottom: 8px;
         }
-
-        /* 主界面按钮 */
-        .btn {
-            margin-top: 64px;
-            padding: 16px 48px;
+        .float-main-title { color: #888; font-size: 12px; font-weight: 500; }
+        .float-main-close { color: #888; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .float-main-date { color: #aaa; font-size: 12px; text-align: center; margin-bottom: 4px; }
+        .float-main-time {
+            color: #4CAF50;
+            font-size: 36px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        .float-main-btn {
+            margin-top: 12px;
+            width: 100%;
+            padding: 10px;
+            border-radius: 20px;
+            border: none;
             background: #4CAF50;
             color: #fff;
-            border: none;
-            border-radius: 28px;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
         }
-        .hint {
-            margin-top: 16px;
-            color: #888;
-            font-size: 14px;
+        .float-main-dev {
+            margin-top: 8px;
+            text-align: center;
+            color: #555;
+            font-size: 10px;
         }
 
-        .label {
+        /* Service floating window */
+        .float-service {
             position: absolute;
-            bottom: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #888;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-        .badge {
-            position: absolute;
-            top: 60px;
-            left: 20px;
-            background: rgba(76, 175, 80, 0.2);
-            color: #4CAF50;
-            padding: 4px 12px;
+            top: 350px;
+            right: 20px;
+            background: rgba(0,0,0,0.27);
             border-radius: 12px;
-            font-size: 12px;
-            border: 1px solid rgba(76, 175, 80, 0.3);
+            padding: 10px 20px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            z-index: 30;
+        }
+        .float-service-time {
+            color: #4CAF50;
+            font-size: 24px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
-    <div class="phone">
-        <div class="notch"></div>
-        <div class="screen">
-            <div class="badge">悬浮窗模式</div>
-
-            <!-- 模拟悬浮小窗口 -->
-            <div class="floating-window" id="floatingWindow">
-                <div class="float-close">×</div>
-                <div class="float-time" id="floatTime">15:52:30</div>
-                <div class="float-label">可拖动</div>
+    <div>
+        <div class="phone">
+            <div class="notch"></div>
+            <div class="float-main" id="floatMain">
+                <div class="float-main-header">
+                    <span class="float-main-title">Clock</span>
+                    <span class="float-main-close">X</span>
+                </div>
+                <div class="float-main-date" id="mainDate">2026-08-27</div>
+                <div class="float-main-time" id="mainTime">14:32:05</div>
+                <button class="float-main-btn">Start</button>
+                <div class="float-main-dev">Developer: xts</div>
             </div>
-
-            <div class="date" id="date">2026年08月26日</div>
-            <div class="week" id="week">星期三</div>
-            <div class="time" id="time">15<span class="colon">:</span>52<span class="colon">:</span>30</div>
-
-            <button class="btn" id="toggleBtn" onclick="toggleFloating()">关闭悬浮时钟</button>
-            <div class="hint">开启后可拖动小窗口到任意位置</div>
         </div>
-        <div class="label">Android 悬浮时钟 App 运行效果预览</div>
+        <div class="label">Main Window (Floating Dialog)</div>
+    </div>
+
+    <div>
+        <div class="phone">
+            <div class="notch"></div>
+            <div style="padding:20px;color:rgba(255,255,255,0.3);font-size:14px;line-height:2;">
+                Chat App<br>
+                Alice: Hello!<br>
+                Bob: How are you?<br>
+                ...<br>
+                You can still tap here!<br>
+                The service float is on top.
+            </div>
+            <div class="float-service" id="floatService">
+                <div class="float-service-time" id="serviceTime">14:32:05</div>
+            </div>
+        </div>
+        <div class="label">Service Float (Over Other Apps)</div>
     </div>
 
     <script>
-        let floatingVisible = true;
-
-        function updateClock() {
+        function updateTime() {
             const now = new Date();
-            const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-
-            document.getElementById('date').textContent = `${year}年${month}月${day}日`;
-            document.getElementById('week').textContent = weekDays[now.getDay()];
-            document.getElementById('time').innerHTML =
-                `${hours}<span class="colon">:</span>${minutes}<span class="colon">:</span>${seconds}`;
-            document.getElementById('floatTime').textContent = `${hours}:${minutes}:${seconds}`;
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            const str = h + ':' + m + ':' + s;
+            const dateStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+            document.getElementById('mainTime').textContent = str;
+            document.getElementById('serviceTime').textContent = str;
+            document.getElementById('mainDate').textContent = dateStr;
         }
+        setInterval(updateTime, 1000);
+        updateTime();
 
-        function toggleFloating() {
-            const fw = document.getElementById('floatingWindow');
-            const btn = document.getElementById('toggleBtn');
-            floatingVisible = !floatingVisible;
-            fw.style.display = floatingVisible ? 'block' : 'none';
-            btn.textContent = floatingVisible ? '关闭悬浮时钟' : '开启悬浮时钟';
-            btn.style.background = floatingVisible ? '#E53935' : '#4CAF50';
-        }
-
-        // 模拟拖动
-        const fw = document.getElementById('floatingWindow');
-        let isDragging = false;
-        let startX, startY, initialLeft, initialTop;
-
-        fw.addEventListener('mousedown', (e) => {
-            if (e.target.classList.contains('float-close')) {
-                toggleFloating();
-                return;
-            }
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            initialLeft = fw.offsetLeft;
-            initialTop = fw.offsetTop;
+        // Draggable main window
+        const floatMain = document.getElementById('floatMain');
+        let dragging = false, offsetX, offsetY;
+        floatMain.addEventListener('mousedown', e => {
+            if (e.target.classList.contains('float-main-close') || e.target.tagName === 'BUTTON') return;
+            dragging = true;
+            offsetX = e.clientX - floatMain.offsetLeft;
+            offsetY = e.clientY - floatMain.offsetTop;
         });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            fw.style.left = (initialLeft + e.clientX - startX) + 'px';
-            fw.style.top = (initialTop + e.clientY - startY) + 'px';
-            fw.style.right = 'auto';
+        document.addEventListener('mousemove', e => {
+            if (!dragging) return;
+            floatMain.style.left = (e.clientX - offsetX) + 'px';
+            floatMain.style.top = (e.clientY - offsetY) + 'px';
         });
-
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-
-        updateClock();
-        setInterval(updateClock, 1000);
+        document.addEventListener('mouseup', () => dragging = false);
     </script>
 </body>
 </html>
