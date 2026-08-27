@@ -1,10 +1,12 @@
-﻿package com.example.clock
+package com.example.clock
 
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -77,12 +79,14 @@ class MainActivity : ComponentActivity() {
     private fun checkAndStartFloating() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(this)) {
+                Toast.makeText(this, "������Ȩ������Ȩ��", Toast.LENGTH_LONG).show()
                 val intent = Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:$packageName")
                 )
                 overlayPermissionLauncher.launch(intent)
             } else {
+                Toast.makeText(this, "������������ʱ��...", Toast.LENGTH_SHORT).show()
                 startFloatingService()
             }
         } else {
@@ -91,9 +95,14 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startFloatingService() {
-        val intent = Intent(this, FloatingWindowService::class.java)
-        startService(intent)
-        isFloating = true
+        try {
+            val intent = Intent(this, FloatingWindowService::class.java)
+            startService(intent)
+            isFloating = true
+        } catch (e: Exception) {
+            Log.e("MainActivity", "��������ʧ��", e)
+            Toast.makeText(this, "����ʧ��: ${e.message}������������Ȩ�޺͵���Ż�����?, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun stopFloatingService() {
@@ -132,7 +141,7 @@ fun MainScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // 日期
+            // ����
             Text(
                 text = currentDate,
                 color = Color.White,
@@ -143,7 +152,7 @@ fun MainScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 星期
+            // ����
             Text(
                 text = currentWeek,
                 color = Color(0xFFAAAAAA),
@@ -153,7 +162,7 @@ fun MainScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 时间（时:分:秒）
+            // ʱ�䣨ʱ:��:�룩
             Text(
                 text = currentTime,
                 color = Color(0xFF4CAF50),
@@ -164,7 +173,7 @@ fun MainScreen(
 
             Spacer(modifier = Modifier.height(64.dp))
 
-            // 悬浮窗控制按钮
+            // ���������ư�ť
             if (!isFloating) {
                 Button(
                     onClick = onStartFloating,
@@ -177,7 +186,7 @@ fun MainScreen(
                     )
                 ) {
                     Text(
-                        text = "开启悬浮时钟",
+                        text = "��������ʱ��",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -194,7 +203,7 @@ fun MainScreen(
                     )
                 ) {
                     Text(
-                        text = "关闭悬浮时钟",
+                        text = "�ر�����ʱ��",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -204,9 +213,15 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "开启后可拖动小窗口到任意位置",
+                text = "��������϶�С���ڵ�����λ��?,
                 color = Color(0xFF888888),
                 fontSize = 14.sp
+            )
+
+            Text(
+                text = "开发�? xts",
+                color = Color(0xFF666666),
+                fontSize = 12.sp
             )
         }
     }
@@ -218,12 +233,12 @@ private fun getCurrentTimeString(): String {
 }
 
 private fun getCurrentDateString(): String {
-    val sdf = SimpleDateFormat("yyyy年MM月dd日", Locale.getDefault())
+    val sdf = SimpleDateFormat("yyyy��MM��dd��", Locale.getDefault())
     return sdf.format(Date())
 }
 
 private fun getCurrentWeekString(): String {
-    val weekDays = arrayOf("星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六")
+    val weekDays = arrayOf("������", "����һ", "���ڶ�", "������", "������", "������", "������")
     val cal = java.util.Calendar.getInstance()
     return weekDays[cal.get(java.util.Calendar.DAY_OF_WEEK) - 1]
 }

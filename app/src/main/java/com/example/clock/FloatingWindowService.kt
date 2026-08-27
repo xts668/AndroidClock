@@ -1,4 +1,4 @@
-﻿package com.example.clock
+package com.example.clock
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -9,9 +9,11 @@ import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -46,6 +48,10 @@ class FloatingWindowService : Service() {
     private var touchX = 0f
     private var touchY = 0f
 
+    companion object {
+        const val TAG = "FloatingClock"
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
@@ -54,8 +60,14 @@ class FloatingWindowService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForegroundNotification()
-        showFloatingWindow()
+        try {
+            startForegroundNotification()
+            showFloatingWindow()
+        } catch (e: Exception) {
+            Log.e(TAG, "����������ʧ��", e)
+            Toast.makeText(this, "����������ʧ��: ${e.message}", Toast.LENGTH_LONG).show()
+            stopSelf()
+        }
         return START_STICKY
     }
 
@@ -64,7 +76,7 @@ class FloatingWindowService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "悬浮时钟",
+                "����ʱ��",
                 NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(NotificationManager::class.java)
@@ -78,8 +90,8 @@ class FloatingWindowService : Service() {
         )
 
         val notification = Notification.Builder(this, channelId)
-            .setContentTitle("悬浮时钟运行中")
-            .setContentText("点击返回应用")
+            .setContentTitle("����ʱ��������")
+            .setContentText("�������Ӧ��")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .setContentIntent(pendingIntent)
             .build()
@@ -88,7 +100,10 @@ class FloatingWindowService : Service() {
     }
 
     private fun showFloatingWindow() {
-        if (floatingView != null) return
+        if (floatingView != null) {
+            Log.d(TAG, "�������Ѵ��ڣ������ظ�����")
+            return
+        }
 
         val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -134,19 +149,27 @@ class FloatingWindowService : Service() {
             }
         }
 
-        windowManager.addView(floatingView, params)
+        try {
+            windowManager.addView(floatingView, params)
+            Log.d(TAG, "�����������ɹ�")
+            Toast.makeText(this, "����ʱ���ѿ���", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Log.e(TAG, "addView ʧ��", e)
+            floatingView = null
+            throw e
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         floatingView?.let {
-            windowManager.removeView(it)
+            try {
+                windowManager.removeView(it)
+            } catch (e: Exception) {
+                Log.e(TAG, "�Ƴ�������ʧ��", e)
+            }
             floatingView = null
         }
-    }
-
-    companion object {
-        const val ACTION_STOP = "com.example.clock.STOP_FLOATING"
     }
 }
 
