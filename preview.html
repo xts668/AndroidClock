@@ -31,7 +31,7 @@
             border: 8px solid #333;
             overflow: hidden;
             position: relative;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 600"><rect fill="%23234" width="300" height="600"/><text fill="rgba(255,255,255,0.1)" font-size="14" x="20" y="100">Home Screen</text><text fill="rgba(255,255,255,0.1)" font-size="14" x="20" y="130">App icons...</text><circle fill="rgba(255,255,255,0.05)" cx="150" cy="500" r="30"/></svg>');
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 600"><rect fill="%23234" width="300" height="600"/><text fill="rgba(255,255,255,0.1)" font-size="14" x="20" y="100">WeChat Chat</text><text fill="rgba(255,255,255,0.1)" font-size="14" x="20" y="130">Alice: Hello!</text><text fill="rgba(255,255,255,0.1)" font-size="14" x="20" y="160">Bob: How are you?</text><circle fill="rgba(255,255,255,0.05)" cx="150" cy="500" r="30"/></svg>');
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
         .notch {
@@ -47,74 +47,42 @@
             z-index: 10;
         }
 
-        /* Floating Main Window */
-        .float-main {
+        /* The floating clock */
+        .float-clock {
             position: absolute;
-            top: 100px;
-            left: 10px;
-            width: 260px;
-            background: rgba(26, 26, 46, 0.93);
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            top: 120px;
+            right: 20px;
+            background: rgba(0,0,0,0.13);
+            border-radius: 12px;
+            padding: 8px 14px;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             cursor: move;
             user-select: none;
-            z-index: 20;
-        }
-        .float-main-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .float-main-title { color: #888; font-size: 12px; font-weight: 500; }
-        .float-main-close { color: #888; font-size: 14px; font-weight: bold; cursor: pointer; }
-        .float-main-date { color: #aaa; font-size: 12px; text-align: center; margin-bottom: 4px; }
-        .float-main-time {
-            color: #4CAF50;
-            font-size: 36px;
-            font-weight: bold;
-            font-family: 'Courier New', monospace;
-            text-align: center;
-            letter-spacing: 1px;
-        }
-        .float-main-btn {
-            margin-top: 12px;
-            width: 100%;
-            padding: 10px;
-            border-radius: 20px;
-            border: none;
-            background: #4CAF50;
-            color: #fff;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .float-main-dev {
-            margin-top: 8px;
-            text-align: center;
-            color: #555;
-            font-size: 10px;
-        }
-
-        /* Service floating window */
-        .float-service {
-            position: absolute;
-            top: 350px;
-            right: 20px;
-            background: rgba(0,0,0,0.27);
-            border-radius: 12px;
-            padding: 10px 20px;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
             z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .float-service-time {
+        .float-time {
             color: #4CAF50;
-            font-size: 24px;
+            font-size: 26px;
             font-family: 'Courier New', monospace;
             font-weight: bold;
             letter-spacing: 1px;
+        }
+        .float-close {
+            width: 18px;
+            height: 18px;
+            background: #666;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -122,36 +90,12 @@
     <div>
         <div class="phone">
             <div class="notch"></div>
-            <div class="float-main" id="floatMain">
-                <div class="float-main-header">
-                    <span class="float-main-title">Clock</span>
-                    <span class="float-main-close">X</span>
-                </div>
-                <div class="float-main-date" id="mainDate">2026-08-27</div>
-                <div class="float-main-time" id="mainTime">14:32:05</div>
-                <button class="float-main-btn">Start</button>
-                <div class="float-main-dev">Developer: xts</div>
+            <div class="float-clock" id="floatClock">
+                <span class="float-time" id="floatTime">14:32:05</span>
+                <span class="float-close">x</span>
             </div>
         </div>
-        <div class="label">Main Window (Floating Dialog)</div>
-    </div>
-
-    <div>
-        <div class="phone">
-            <div class="notch"></div>
-            <div style="padding:20px;color:rgba(255,255,255,0.3);font-size:14px;line-height:2;">
-                Chat App<br>
-                Alice: Hello!<br>
-                Bob: How are you?<br>
-                ...<br>
-                You can still tap here!<br>
-                The service float is on top.
-            </div>
-            <div class="float-service" id="floatService">
-                <div class="float-service-time" id="serviceTime">14:32:05</div>
-            </div>
-        </div>
-        <div class="label">Service Float (Over Other Apps)</div>
+        <div class="label">Tap App icon = instant floating window<br>No main screen, just drag it anywhere</div>
     </div>
 
     <script>
@@ -160,28 +104,24 @@
             const h = String(now.getHours()).padStart(2, '0');
             const m = String(now.getMinutes()).padStart(2, '0');
             const s = String(now.getSeconds()).padStart(2, '0');
-            const str = h + ':' + m + ':' + s;
-            const dateStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-            document.getElementById('mainTime').textContent = str;
-            document.getElementById('serviceTime').textContent = str;
-            document.getElementById('mainDate').textContent = dateStr;
+            document.getElementById('floatTime').textContent = h + ':' + m + ':' + s;
         }
         setInterval(updateTime, 1000);
         updateTime();
 
-        // Draggable main window
-        const floatMain = document.getElementById('floatMain');
+        const floatClock = document.getElementById('floatClock');
         let dragging = false, offsetX, offsetY;
-        floatMain.addEventListener('mousedown', e => {
-            if (e.target.classList.contains('float-main-close') || e.target.tagName === 'BUTTON') return;
+        floatClock.addEventListener('mousedown', e => {
+            if (e.target.classList.contains('float-close')) return;
             dragging = true;
-            offsetX = e.clientX - floatMain.offsetLeft;
-            offsetY = e.clientY - floatMain.offsetTop;
+            offsetX = e.clientX - floatClock.offsetLeft;
+            offsetY = e.clientY - floatClock.offsetTop;
         });
         document.addEventListener('mousemove', e => {
             if (!dragging) return;
-            floatMain.style.left = (e.clientX - offsetX) + 'px';
-            floatMain.style.top = (e.clientY - offsetY) + 'px';
+            floatClock.style.left = (e.clientX - offsetX) + 'px';
+            floatClock.style.right = 'auto';
+            floatClock.style.top = (e.clientY - offsetY) + 'px';
         });
         document.addEventListener('mouseup', () => dragging = false);
     </script>
