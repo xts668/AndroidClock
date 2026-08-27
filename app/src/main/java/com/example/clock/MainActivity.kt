@@ -54,6 +54,8 @@ class MainActivity : ComponentActivity() {
     ) {
         if (Settings.canDrawOverlays(this)) {
             startFloatingService()
+        } else {
+            Toast.makeText(this, "Overlay permission denied", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -85,7 +87,6 @@ class MainActivity : ComponentActivity() {
                 )
                 overlayPermissionLauncher.launch(intent)
             } else {
-                Toast.makeText(this, "Starting floating clock...", Toast.LENGTH_SHORT).show()
                 startFloatingService()
             }
         } else {
@@ -98,6 +99,7 @@ class MainActivity : ComponentActivity() {
             val intent = Intent(this, FloatingWindowService::class.java)
             startService(intent)
             isFloating = true
+            Toast.makeText(this, "Floating clock started", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Log.e("MainActivity", "Failed to start service", e)
             Toast.makeText(this, "Failed: ${e.message}", Toast.LENGTH_LONG).show()
@@ -108,6 +110,7 @@ class MainActivity : ComponentActivity() {
         val intent = Intent(this, FloatingWindowService::class.java)
         stopService(intent)
         isFloating = false
+        Toast.makeText(this, "Floating clock stopped", Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -181,7 +184,7 @@ fun MainScreen(
                     )
                 ) {
                     Text(
-                        text = "Start Floating Clock",
+                        text = "Start Floating",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -198,7 +201,7 @@ fun MainScreen(
                     )
                 ) {
                     Text(
-                        text = "Stop Floating Clock",
+                        text = "Stop Floating",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -208,7 +211,7 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Drag the floating window to any position",
+                text = "Drag the floating window anywhere",
                 color = Color(0xFF888888),
                 fontSize = 14.sp
             )
@@ -235,7 +238,7 @@ private fun getCurrentDateString(): String {
 }
 
 private fun getCurrentWeekString(): String {
-    val weekDays = arrayOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+    val weekDays = arrayOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
     val cal = java.util.Calendar.getInstance()
     return weekDays[cal.get(java.util.Calendar.DAY_OF_WEEK) - 1]
 }

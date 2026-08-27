@@ -50,6 +50,8 @@ class FloatingWindowService : Service() {
 
     companion object {
         const val TAG = "FloatingClock"
+        const val CHANNEL_ID = "floating_clock_channel"
+        const val NOTIFICATION_ID = 1
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -64,21 +66,22 @@ class FloatingWindowService : Service() {
             startForegroundNotification()
             showFloatingWindow()
         } catch (e: Exception) {
-            Log.e(TAG, "����������ʧ��", e)
-            Toast.makeText(this, "����������ʧ��: ${e.message}", Toast.LENGTH_LONG).show()
+            Log.e(TAG, "Failed to start floating window", e)
+            Toast.makeText(this, "Failed to start: ${e.message}", Toast.LENGTH_LONG).show()
             stopSelf()
         }
         return START_STICKY
     }
 
     private fun startForegroundNotification() {
-        val channelId = "floating_clock_channel"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                channelId,
-                "����ʱ��",
+                CHANNEL_ID,
+                "Floating Clock",
                 NotificationManager.IMPORTANCE_LOW
-            )
+            ).apply {
+                setShowBadge(false)
+            }
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
         }
@@ -89,19 +92,28 @@ class FloatingWindowService : Service() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification = Notification.Builder(this, channelId)
-            .setContentTitle("����ʱ��������")
-            .setContentText("�������Ӧ��")
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(this, CHANNEL_ID)
+        } else {
+            @Suppress("DEPRECATION")
+            Notification.Builder(this)
+        }
+
+        val notification = builder
+            .setContentTitle("Floating Clock")
+            .setContentText("Running...")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .setContentIntent(pendingIntent)
+            .setOngoing(true)
+            .setWhen(System.currentTimeMillis())
             .build()
 
-        startForeground(1, notification)
+        startForeground(NOTIFICATION_ID, notification)
     }
 
     private fun showFloatingWindow() {
         if (floatingView != null) {
-            Log.d(TAG, "�������Ѵ��ڣ������ظ�����")
+            Log.d(TAG, "Already showing")
             return
         }
 
@@ -116,7 +128,9 @@ class FloatingWindowService : Service() {
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             layoutFlag,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
@@ -151,10 +165,9 @@ class FloatingWindowService : Service() {
 
         try {
             windowManager.addView(floatingView, params)
-            Log.d(TAG, "�����������ɹ�")
-            Toast.makeText(this, "����ʱ���ѿ���", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Floating window shown")
         } catch (e: Exception) {
-            Log.e(TAG, "addView ʧ��", e)
+            Log.e(TAG, "addView failed", e)
             floatingView = null
             throw e
         }
@@ -166,7 +179,7 @@ class FloatingWindowService : Service() {
             try {
                 windowManager.removeView(it)
             } catch (e: Exception) {
-                Log.e(TAG, "�Ƴ�������ʧ��", e)
+                Log.e(TAG, "removeView failed", e)
             }
             floatingView = null
         }
@@ -187,10 +200,10 @@ fun FloatingClockContent() {
     Box(
         modifier = Modifier
             .background(
-                color = Color(0xCC000000),
-                shape = RoundedCornerShape(16.dp)
+                color = Color(0x44000000),
+                shape = RoundedCornerShape(12.dp)
             )
-            .padding(horizontal = 20.dp, vertical = 12.dp)
+            .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
         Text(
             text = currentTime,
