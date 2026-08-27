@@ -20,8 +20,7 @@ class MainActivity : ComponentActivity() {
         } else {
             Toast.makeText(this, "Overlay permission denied", Toast.LENGTH_LONG).show()
         }
-        finish()
-        overridePendingTransition(0, 0)
+        moveTaskToBack(true)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,8 +29,7 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (Settings.canDrawOverlays(this)) {
                 startFloatingService()
-                finish()
-                overridePendingTransition(0, 0)
+                moveTaskToBack(true)
             } else {
                 val intent = Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -41,9 +39,12 @@ class MainActivity : ComponentActivity() {
             }
         } else {
             startFloatingService()
-            finish()
-            overridePendingTransition(0, 0)
+            moveTaskToBack(true)
         }
+    }
+
+    override fun onBackPressed() {
+        moveTaskToBack(true)
     }
 
     private fun startFloatingService() {
@@ -57,7 +58,7 @@ class MainActivity : ComponentActivity() {
             Toast.makeText(this, "Floating clock started", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Log.e("MainActivity", "Failed to start service", e)
-            Toast.makeText(this, "Failed: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Failed: " + e.message, Toast.LENGTH_LONG).show()
         }
     }
 }
