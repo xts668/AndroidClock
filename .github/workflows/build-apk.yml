@@ -15,6 +15,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Fix Windows file encoding (CRLF / BOM)
+      run: |
+        # Remove BOM if present
+        sed -i '1s/^\xEF\xBB\xBF//' settings.gradle build.gradle app/build.gradle gradle.properties
+        # Convert CRLF to LF
+        sed -i 's/\r$//' settings.gradle build.gradle app/build.gradle gradle.properties
+        # Verify first bytes of settings.gradle
+        xxd -l 32 settings.gradle
+
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -24,28 +33,44 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Install Android SDK components
+    - name: Find sdkmanager and install SDK
       run: |
-        sdkmanager "platforms;android-34" "build-tools;34.0.0"
+        echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+        find $ANDROID_SDK_ROOT -name "sdkmanager" -type f 2>/dev/null || true
+        if [ -f "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
+          export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+        elif [ -f "$ANDROID_SDK_ROOT/cmdline-tools/bin/sdkmanager" ]; then
+          export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/bin
+        fi
+        sdkmanager --list | head -20 || true
+        yes | sdkmanager "platforms;android-34" "build-tools;34.0.0" || true
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
-      with:
-        gradle-version: 8.2
-
-    - name: Generate Gradle Wrapper
+    - name: Download and install Gradle
       run: |
+        wget -q https://services.gradle.org/distributions/gradle-8.2-bin.zip
+        unzip -q gradle-8.2-bin.zip
+        export PATH=$PWD/gradle-8.2/bin:$PATH
+        gradle --version
         gradle wrapper --gradle-version 8.2
         chmod +x gradlew
 
     - name: Create local.properties
       run: |
         echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+        cat local.properties
+
+    - name: List project files
+      run: |
+        ls -la
+        ls -la gradle/wrapper/
 
     - name: Build Debug APK
-      run: ./gradlew assembleDebug --no-daemon --stacktrace
+      run: |
+        export PATH=$PWD/gradle-8.2/bin:$PATH
+        ./gradlew assembleDebug --no-daemon --stacktrace || gradle assembleDebug --no-daemon --stacktrace
 
     - name: Upload APK
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
